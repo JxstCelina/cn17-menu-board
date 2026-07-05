@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DuoPrep — Meal-Prep</title>
+<style>
+  :root{
+    --bg:#f6f1e6; --surface:#ffffff; --surface-2:#efe7d6; --border:#e2d8c3;
+    --text:#3a332b; --text-2:#6d6455; --text-muted:#948a78;
+    --profileN:#c1712f; --profileN-bg:#f3e0cb;
+    --profileC:#4c8874; --profileC-bg:#dceae2;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    line-height:1.55;
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:32px 20px 80px;}
+  header{margin-bottom:24px;}
+  header h1{font-size:26px;font-weight:600;margin:0 0 4px;color:var(--text);}
+  header p{color:var(--text-2);font-size:14px;margin:0;}
+  .icon{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-4px;}
+
+  .profiles{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;}
+  .profile-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+  .profile-card.profileN{border-color:var(--profileN);}
+  .profile-card.profileC{border-color:var(--profileC);}
+  .profile-card .name{font-weight:600;font-size:15px;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+  .dot{width:9px;height:9px;border-radius:50%;display:inline-block;}
+  .dot.profileN{background:var(--profileN);}
+  .dot.profileC{background:var(--profileC);}
+  .macro-row{display:flex;gap:14px;font-size:13px;color:var(--text-2);flex-wrap:wrap;margin-top:8px;}
+  .macro-row b{color:var(--text);font-weight:600;}
+
+  .week-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:16px;}
+  .day-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 4px;text-align:center;cursor:pointer;}
+  .day-card.active{background:var(--surface-2);border-color:var(--text-2);}
+  .day-card .d{font-weight:600;font-size:14px;}
+  .day-card .dt{font-size:10px;color:var(--text-muted);margin-bottom:6px;}
+  .day-card .cookflag{font-size:10px;margin-bottom:4px;height:14px;color:var(--profileN);}
+  .day-card .row-icons{display:flex;justify-content:center;gap:8px;margin-top:2px;}
+  .day-card .row-icons .icon{width:16px;height:16px;}
+  .profileN-i{color:var(--profileN);}
+  .profileC-i{color:var(--profileC);}
+
+  section{margin-bottom:32px;}
+  section > h2{font-size:16px;font-weight:600;margin:0 0 12px;color:var(--text);}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+
+  .who-row{display:flex;gap:14px;font-size:13px;color:var(--text-2);margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+  .who-row span.who{display:inline-flex;align-items:center;gap:6px;}
+  .train-toggle{border:1px solid var(--border);border-radius:20px;padding:4px 10px 4px 8px;font-size:12px;cursor:pointer;background:var(--surface-2);color:var(--text-2);display:inline-flex;align-items:center;gap:5px;}
+  .train-toggle.off{background:transparent;color:var(--text-muted);text-decoration:line-through;}
+
+  .meal-block{border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;background:var(--surface);}
+  .meal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .meal-head h4{margin:0;font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--text-2);display:flex;align-items:center;gap:6px;}
+  .skip-toggle{font-size:11px;display:flex;align-items:center;gap:5px;cursor:pointer;color:var(--text-muted);}
+  .skip-toggle input{accent-color:var(--profileN);}
+  .meal-block.skipped{opacity:.45;}
+  .col.skipped{opacity:.5;}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .col h5{font-size:12px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.03em;}
+  .col.profileN h5{color:var(--profileN);}
+  .col.profileC h5{color:var(--profileC);}
+  ul.ing{margin:0;padding-left:18px;font-size:13px;color:var(--text-2);}
+  ul.ing li{margin-bottom:3px;}
+  .mini-macro{font-size:12px;color:var(--text-muted);margin-top:6px;}
+
+  .basis-box{background:var(--surface-2);border-radius:8px;padding:12px 14px;margin:10px 0 14px;font-size:13px;color:var(--text-2);}
+  .basis-box b{color:var(--text);}
+
+  .steps{font-size:13px;color:var(--text-2);margin:10px 0 0;}
+  .steps ol{padding-left:18px;margin:6px 0 0;}
+  .steps ol li{margin-bottom:4px;}
+
+  .tag{display:inline-block;font-size:11px;padding:3px 9px;border-radius:20px;margin-right:6px;}
+  .tag.style{background:var(--surface-2);color:var(--text-2);}
+  .tag.weekend{background:var(--profileN-bg);color:var(--profileN);}
+
+  .totals{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+  .total-card{border-radius:12px;padding:14px 16px;}
+  .total-card.profileN{background:var(--profileN-bg);}
+  .total-card.profileC{background:var(--profileC-bg);}
+  .total-card .lbl{font-size:12px;color:var(--text-2);margin-bottom:4px;}
+  .total-card .val{font-size:22px;font-weight:600;}
+  .total-card .sub{font-size:12px;color:var(--text-2);margin-top:4px;}
+
+  .bake-note{margin-top:18px;padding-top:16px;border-top:1px solid var(--border);}
+  .bake-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px;}
+  .bake-card{background:var(--surface-2);border-radius:10px;padding:14px 16px;}
+  .bake-card h3{font-size:14px;margin:0 0 4px;}
+  .bake-card p.sub{font-size:12px;color:var(--text-muted);margin:0 0 8px;}
+
+  .shop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;}
+  .shop-grid h4{font-size:13px;margin:0 0 8px;color:var(--text);}
+  .shop-grid ul{margin:0;padding-left:16px;font-size:13px;color:var(--text-2);}
+  .shop-grid li{margin-bottom:4px;}
+  .price-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:16px;}
+  .price-table th{text-align:left;color:var(--text-muted);font-weight:500;padding:6px 8px;border-bottom:1px solid var(--border);}
+  .price-table td{padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text-2);}
+  .price-table tr td:last-child{color:var(--text);text-align:right;}
+  .total-row{font-size:13px;color:var(--text);margin-top:10px;}
+  .adjust-box{margin-top:14px;padding:12px 14px;background:var(--surface-2);border-radius:10px;font-size:13px;color:var(--text-2);}
+  .adjust-box b{color:var(--text);}
+
+  .note{font-size:13px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:16px;margin-top:8px;}
+  .note b{color:var(--text-2);}
+
+  @media (max-width:640px){
+    .profiles,.cols,.bake-grid,.totals{grid-template-columns:1fr;}
+    .week-grid{grid-template-columns:repeat(7,minmax(34px,1fr));}
+    .day-card{padding:6px 2px;}
+  }
+
+/* Minimal Tab-Layout */
+.wrap{max-width:480px;margin:0 auto;padding:14px 12px 76px;}
+header{margin-bottom:14px;}
+header h1{font-size:20px;}
+header p{font-size:12px;}
+.card{padding:14px;margin-bottom:10px;}
+.tab-page{display:none;}
+.tab-page.active{display:block;}
+.tabbar{position:fixed;bottom:0;left:0;right:0;z-index:20;display:flex;background:var(--surface);border-top:1px solid var(--border);box-shadow:0 -6px 20px rgba(58,51,43,.06);}
+.tabbar button{flex:1;padding:11px 0 10px;border:0;background:none;font-size:11px;color:var(--text-2);font:inherit;cursor:pointer;}
+.tabbar button.active{color:var(--profileN);font-weight:700;}
+.mini-section-title{font-size:13px;font-weight:700;margin:0 0 8px;color:var(--text-2);}
+#page-heute .week-grid{display:none;}
+#page-einkauf .price-table{font-size:12px;}
+#page-einkauf .price-table th,#page-einkauf .price-table td{padding:7px 4px;}
+#page-einstellungen .profiles{grid-template-columns:1fr;margin-bottom:10px;}
+@media (max-width:640px){
+  .wrap{padding:14px 12px 76px;}
+  .week-grid{grid-template-columns:repeat(7,1fr);gap:5px;}
+  .day-card{padding:8px 2px;}
+  .row-icons{display:none!important;}
+  .totals,.cols,.profiles{grid-template-columns:1fr;}
+}
+
+
+.mealcard{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;background:var(--surface);}
+.mealhead{display:flex;justify-content:space-between;gap:10px;font-size:14px;align-items:flex-start;}
+.mealhead .dish{font-weight:500;color:var(--text-2);text-align:right;}
+.portions{font-size:12px;color:var(--text-2);display:grid;gap:4px;margin:8px 0;}
+.mini{font-size:11px;color:var(--text-muted);}
+.weekrow{display:grid;grid-template-columns:48px 1fr auto;gap:8px;align-items:center;font-size:13px;cursor:pointer;}
+.weekrow .dish{color:var(--text-2);}
+.card.small{padding:10px 12px;}
+details p{font-size:13px;color:var(--text-2);margin:8px 0;}
+label{display:inline-block;margin:3px 0;}
+input[type=checkbox]{accent-color:var(--profileC);}
+
+
+.modal{display:none;position:fixed;inset:0;background:var(--bg);z-index:50;overflow-y:auto;}
+.modal.open{display:block;}
+.modal-inner{max-width:520px;margin:0 auto;padding:14px 14px 28px;}
+.backbtn{border:0;background:none;color:var(--profileN);font-size:14px;margin:0 0 10px;padding:8px 0;}
+.recipeimg{height:170px;border-radius:16px;background:linear-gradient(135deg,var(--profileN-bg,#f3e0cb),var(--profileC-bg,#dceae2));display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:13px;margin-bottom:14px;text-align:center;padding:18px;}
+.recipe-book h1{font-size:26px;line-height:1.1;margin:6px 0 8px;letter-spacing:-.02em;}
+.rmeta{font-size:12px;color:var(--text-2);margin:0 0 12px;}
+.steplist{padding-left:0;list-style:none;margin:0;counter-reset:steps;}
+.steplist li{margin-bottom:10px;font-size:14px;counter-increment:steps;}
+.steplist label{display:flex;gap:10px;align-items:flex-start;}
+.steplist li span:before{content:counter(steps) '. ';font-weight:700;color:var(--profileN);}
+.stepcheck{margin-top:4px;}
+.stepcheck:checked+span{text-decoration:line-through;color:var(--text-muted);}
+.recipebtn{width:100%;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);font-size:13px;margin:8px 0 4px;}
+.bookcard{border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;font-size:14px;background:var(--surface);}
+@media print{body{background:white}.tabbar,.recipebtn,.backbtn{display:none!important}.tab-page,.wrap>header{display:none!important}#recipeModal{display:block!important;position:static;background:white}.modal-inner{max-width:760px}.recipeimg{break-inside:avoid}details{break-inside:avoid}}
+
+</style>
+</head>
+<body>
+
+<svg style="display:none">
+<defs>
+  <symbol id="i-barbell" viewBox="0 0 24 24"><rect x="1.5" y="9" width="3" height="6" rx="1"/><rect x="4.5" y="7" width="2.5" height="10" rx="1"/><line x1="7" y1="12" x2="17" y2="12"/><rect x="16.5" y="7" width="2.5" height="10" rx="1"/><rect x="19.5" y="9" width="3" height="6" rx="1"/></symbol>
+  <symbol id="i-bike" viewBox="0 0 24 24"><circle cx="5.5" cy="17.5" r="3"/><circle cx="18.5" cy="17.5" r="3"/><path d="M5.5 17.5 L9.5 8.5 H14 L18.5 17.5 M9.5 8.5 L13 15 M13 15 H8"/><circle cx="14" cy="8.5" r="1.2"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 2c1 3-2 4-2 7a4 4 0 1 0 8 0c0-1.5-1-2-1.5-3 .8 2-1 3-1.5 1.5C15.5 5 13 4 12 2Z"/><path d="M9 14a3 3 0 1 0 6 0c0-1.5-1.5-2.5-3-4.5C10.5 11.5 9 12.5 9 14Z"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z"/></symbol>
+  <symbol id="i-yoga" viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="1.8"/><path d="M12 7v4M12 11l-5 3M12 11l5 3M9 7.5 6 9M15 7.5 18 9M7 14l1 4M17 14l-1 4"/></symbol>
+  <symbol id="i-pot" viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="9" rx="1.5"/><path d="M2 9h20M7 9V6M17 9V6"/><path d="M9 4.5c0 1-1 1-1 2M15 4.5c0 1 1 1 1 2"/></symbol>
+  <symbol id="i-bread" viewBox="0 0 24 24"><path d="M4 11c0-4 3.5-7 8-7s8 3 8 7v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/><path d="M9 8v9M12 7v10M15 8v9"/></symbol>
+  <symbol id="i-egg" viewBox="0 0 24 24"><path d="M12 2c3.5 4 6 8.2 6 12a6 6 0 1 1-12 0c0-3.8 2.5-8 6-12Z"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></symbol>
+  <symbol id="i-fork" viewBox="0 0 24 24"><path d="M6 2v8a2 2 0 0 0 4 0V2M8 10v12M18 2c-2 0-3 2-3 5s1 4 3 4v9"/></symbol>
+</defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <h1>DuoPrep</h1>
+    <p>Woche 06.–12.07.2026 · privater Wochenplan</p>
+  </header>
+
+  <div id="page-heute" class="tab-page active">
+    <div class="card" id="dayDetail"></div>
+  </div>
+
+  <div id="page-woche" class="tab-page">
+    <section>
+      <h2>Woche</h2>
+      <div class="week-grid" id="weekGrid"></div>
+    </section>
+  </div>
+
+  <div id="page-einkauf" class="tab-page">
+    <section>
+      <h2>Einkauf</h2>
+      <div class="card">
+        <p class="mini-section-title">Einkauf 1 · Mo–Do</p>
+        <table class="price-table">
+          <tr><th>Zutat</th><th>Menge</th><th>Preis</th></tr>
+          <tr><td>Hähnchenbrustfilet</td><td>700 g</td><td>9,99 €</td></tr>
+          <tr><td>Lachsfilet, norwegisch</td><td>1000 g</td><td>19,78 €</td></tr>
+          <tr><td>Basmatireis</td><td>680 g Bedarf (1kg-Pack)</td><td>2,20 €</td></tr>
+          <tr><td>Frisches + TK-Gemüse, Saucen/Toppings</td><td>für 4 Styles</td><td>ca. 20 €</td></tr>
+        </table>
+        <p class="mini-section-title">Einkauf 2 · Fr–So</p>
+        <table class="price-table">
+          <tr><th>Zutat</th><th>Menge</th><th>Preis</th></tr>
+          <tr><td>Rinderhack, mager</td><td>400 g</td><td>5,29 €</td></tr>
+          <tr><td>Hähnchenbrustfilet</td><td>700 g</td><td>5,49 €</td></tr>
+          <tr><td>Lachsfilet</td><td>350 g</td><td>5,79 €</td></tr>
+          <tr><td>Dinkelnudeln, Tomaten, Linsen, Dinkelmehl, Hefe</td><td>s. Einkaufsliste</td><td>ca. 7 €</td></tr>
+          <tr><td>Joghurt, Salate, Rucola</td><td>s. Einkaufsliste</td><td>ca. 6 €</td></tr>
+        </table>
+        <div class="total-row">Gemeinsame Zutaten: <b>ca. 13 €</b> · Gesamt: <b>ca. 100 € / Woche</b></div>
+        <div id="adjustBox" class="adjust-box" style="display:none;"></div>
+      </div>
+    </section>
+  </div>
+
+  <div id="page-prep" class="tab-page">
+    <section>
+      <h2>Prep</h2>
+      <div class="card">
+        <p class="mini-section-title">Kochtage</p>
+        <p class="mini-macro">Mo: Batch 1 vorbereiten · Fr: Batch 2 vorbereiten · So: Wochenend-Döner-Bowl + Backen.</p>
+      </div>
+      <div class="card">
+        <p class="mini-section-title">Snacks</p>
+        <p class="mini-macro">Protein-Bananenbrot und High-Protein-Cookies am Wochenende vorbereiten.</p>
+      </div>
+    </section>
+  </div>
+
+  <div id="page-einstellungen" class="tab-page">
+    <section>
+      <h2>Mehr</h2>
+      <div class="profiles">
+        <div class="profile-card profileN">
+          <div class="name"><span class="dot profileN"></span>Profil N</div>
+          <div class="macro-row">Ziel Ø <b>2335 kcal</b></div>
+          <div class="macro-row"><span>Protein <b>160g</b></span><span>KH <b>276g</b></span><span>Fett <b>65g</b></span></div>
+        </div>
+        <div class="profile-card profileC">
+          <div class="name"><span class="dot profileC"></span>Profil C</div>
+          <div class="macro-row">Ziel Ø <b>1998 kcal</b></div>
+          <div class="macro-row"><span>Protein <b>105g</b></span><span>KH <b>260g</b></span><span>Fett <b>60g</b></span></div>
+        </div>
+      </div>
+      <div class="note">
+        <b>Hinweise:</b> Allgemeine Hinweise: unerwünschte Zutaten meiden. Proteinpulver ist kein täglicher Fixbestandteil. Snack-Puffer ist in die Tagesbilanz eingerechnet.
+      </div>
+    </section>
+  </div>
+</div>
+
+
+<div id="recipeModal" class="modal">
+  <div class="modal-inner recipe-book">
+    <button class="backbtn" onclick="closeRecipe()">← Zurück</button>
+    <div id="recipeContent"></div>
+  </div>
+</div>
+
+<div class="tabbar">
+  <button data-tab="heute" class="active">Heute</button>
+  <button data-tab="woche">Woche</button>
+  <button data-tab="einkauf">Einkauf</button>
+  <button data-tab="prep">Prep</button>
+  <button data-tab="einstellungen">Mehr</button>
+</div>
+
+<script>
+function icon(id){return `<svg class="icon"><use href="#${id}"/></svg>`;}
+
+const breakfast = { profileC:[425,25,58,14,"37g Haferflocken, 120g Magerquark, 100ml Mandelmilch, Chia/Flohsamen, 1/2 Banane, 10g Walnüsse"], profileN:[590,37,75,20,"55g Haferflocken, 180g Magerquark, 150ml Mandelmilch, Chia/Flohsamen, 1 Banane, 15g Walnüsse"] };
+const snack = { profileC:[130,7,14,6], profileN:[150,8,16,7] };
+
+const styleMeta = {
+  mo:{batch:"Batch 1",style:"Sriracha-Mayo-Bowl",basisAll:"700g Hähnchen (Profil C) + 1000g Lachs (Profil N) einmal vorbereiten: würzen, im Ofen/Airfryer garen (180°C, 12-14 Min). Reis frisch alle 2 Tage im Reiskocher.",extra:"150g Brokkoli, 1/2 Paprika, 1/4 Gurke kurz dünsten. 1 EL Mayo + 1 TL Sriracha verrühren.",geraet:"Airfryer + Reiskocher",haltbar:"Hähnchen/Lachs 3-4 Tage Kühlschrank."},
+  di:{batch:"Batch 1",style:"Asia-Erdnuss-Bowl",basisAll:"Gleiche Basis wie Montag (Hähnchen/Lachs aus Vorbereitung).",extra:"200g TK-Asia-Gemüse auftauen/anbraten. Frühlingszwiebel, 15g Erdnüsse, 1 EL Erdnussmus + 1 EL Sojasauce + 1 TL Wasser.",geraet:"Pfanne",haltbar:"Wie Montag."},
+  mi:{batch:"Batch 1",style:"Ofengemüse & Joghurt-Dip",basisAll:"Gleiche Basis wie Montag.",extra:"150g Zucchini + 100g Süßkartoffel im Ofen rösten (200°C, 15 Min). Dip: 3 EL Joghurt + 1/2 Knoblauchzehe + Zitronensaft.",geraet:"Ofen",haltbar:"Wie Montag."},
+  do:{batch:"Batch 1",style:"Kalte Sesam-Bowl",basisAll:"Gleiche Basis, Reis-Rest aufbrauchen.",extra:"100g Karotte geraspelt, 1/4 Gurke. Dressing: 1 EL Sesamöl + 1 EL Reisessig + 1 TL Sojasauce + 1 TL Sesam.",geraet:"—",haltbar:"Wie Montag."},
+  fr:{batch:"Batch 2",style:"Nudeln Bolognese",basisAll:"Sauce: 2 Dosen Tomaten + 150g rote Linsen + Zwiebel/Knoblauch/Kräuter 20 Min köcheln (Thermomix/Topf). Profil C: Hähnchenwürfel in Sauce mitgaren. Profil N: Rinderhack separat anbraten, untermischen.",extra:"Dinkelnudeln (320g) kochen, mit Sauce warm servieren.",geraet:"Thermomix/Topf",haltbar:"Sauce 3-4 Tage, gut portionierbar."},
+  sa:{batch:"Batch 2",style:"Nudelsalat kalt",basisAll:"Reste von Freitag.",extra:"Kalt mit 50g Rucola + 1 EL Balsamico + 1 TL Olivenöl.",geraet:"—",haltbar:"1 Tag."},
+  so:{batch:"Batch 2",style:"Wochenend-Döner-Bowl",basisAll:"Fladenbrot: 350g Dinkelmehl + 7g Hefe + 200ml Wasser + 1 TL Salz + 1 EL Öl kneten (Thermomix), 45 Min gehen lassen, 8 Fladen backen. Protein würzen (Döner-Gewürz), im Ofen/Airfryer garen.",extra:"Dip: 250g Joghurt + Knoblauch + Zitrone + Kräuter. Dazu Rotkohl-/Tomate-Gurke-Salat.",geraet:"Thermomix + Ofen/Airfryer",haltbar:"Fladenbrot 2-3 Tage."}
+};
+
+const days = [
+  { key:"mo", label:"Mo", date:"06.07.", cook:true, profileNT:"Training", profileCT:"Mobilität", profileNTargetTrain:2260, profileNTargetRest:2156, profileCTargetTrain:1895, profileCTargetRest:1625, lunch:{ profileC:[570,34,68,14,"100g Hähnchenbrust + 200g Reis"], profileN:[770,38,82,29,"150g Lachs + 250g Reis"] }, dinner:{ profileC:[440,26,52,11,"75g Hähnchenbrust + 150g Reis"], profileN:[570,26,60,19,"100g Lachs + 180g Reis"] } },
+  { key:"di", label:"Di", date:"07.07.", cook:false, profileNT:"Ausdauer", profileCT:"Ausdauer", profileNTargetTrain:2560, profileNTargetRest:2156, profileCTargetTrain:2095, profileCTargetRest:1625, lunch:{ profileC:[570,34,68,14,"100g Hähnchenbrust + 200g Reis"], profileN:[770,38,82,29,"150g Lachs + 250g Reis"] }, dinner:{ profileC:[440,26,52,11,"75g Hähnchenbrust + 150g Reis"], profileN:[570,26,60,19,"100g Lachs + 180g Reis"] } },
+  { key:"mi", label:"Mi", date:"08.07.", cook:false, profileNT:"Training", profileCT:"Mobilität", profileNTargetTrain:2260, profileNTargetRest:2156, profileCTargetTrain:1895, profileCTargetRest:1625, lunch:{ profileC:[570,34,68,14,"100g Hähnchenbrust + 200g Reis"], profileN:[770,38,82,29,"150g Lachs + 250g Reis"] }, dinner:{ profileC:[440,26,52,11,"75g Hähnchenbrust + 150g Reis"], profileN:[570,26,60,19,"100g Lachs + 180g Reis"] } },
+  { key:"do", label:"Do", date:"09.07.", cook:false, profileNT:"Ausdauer intensiv", profileCT:"Training", profileNTargetTrain:2705, profileNTargetRest:2156, profileCTargetTrain:2095, profileCTargetRest:1625, lunch:{ profileC:[570,34,68,14,"100g Hähnchenbrust + 200g Reis"], profileN:[770,38,82,29,"150g Lachs + 250g Reis"] }, dinner:{ profileC:[440,26,52,11,"75g Hähnchenbrust + 150g Reis"], profileN:[570,26,60,19,"100g Lachs + 180g Reis"] } },
+  { key:"fr", label:"Fr", date:"10.07.", cook:true, profileNT:"Training", profileCT:"Mobilität", profileNTargetTrain:2260, profileNTargetRest:2156, profileCTargetTrain:1895, profileCTargetRest:1625, lunch:{ profileC:[580,33,78,10,"100g Hähnchen-Sauce + 100g Nudeln"], profileN:[720,40,90,20,"110g Rinderhack-Sauce + 120g Nudeln"] }, dinner:{ profileC:[450,25,60,8,"75g Hähnchen-Sauce + 80g Nudeln"], profileN:[560,32,70,15,"90g Rinderhack-Sauce + 100g Nudeln"] } },
+  { key:"sa", label:"Sa", date:"11.07.", cook:false, profileNT:"Ausdauer", profileCT:"Ausdauer", profileNTargetTrain:2560, profileNTargetRest:2156, profileCTargetTrain:2095, profileCTargetRest:1625, lunch:{ profileC:[580,33,78,10,"100g Hähnchen-Sauce + 100g Nudeln (kalt)"], profileN:[720,40,90,20,"110g Rinderhack-Sauce + 120g Nudeln (kalt)"] }, dinner:{ profileC:[450,25,60,8,"75g Hähnchen-Sauce + 80g Nudeln (kalt)"], profileN:[560,32,70,15,"90g Rinderhack-Sauce + 100g Nudeln (kalt)"] } },
+  { key:"so", label:"So", date:"12.07.", cook:true, profileNT:"Ruhetag", profileCT:"Training", profileNTargetTrain:1755, profileNTargetRest:1755, profileCTargetTrain:2015, profileCTargetRest:1625, lunch:{ profileC:[600,35,65,15,"100g Hähnchen + 2 Fladen"], profileN:[740,40,75,24,"100g Lachs + 2 Fladen"] }, dinner:{ profileC:[480,28,52,12,"75g Hähnchen + 1,5 Fladen"], profileN:[580,32,60,18,"75g Lachs + 1,5 Fladen"] } }
+];
+
+const bake=[{name:"Protein-Bananenbrot",sub:"10 Scheiben · ~140 kcal/Scheibe",ing:["3 reife Bananen","4 Eier","200g Magerquark","60g Proteinpulver","150g Dinkelmehl","1 TL Backpulver, 1 TL Zimt","50g Walnüsse"],steps:"Verrühren, 45-50 Min bei 175°C backen."},{name:"High-Protein-Cookies",sub:"12 Stück · ~120 kcal/Stück",ing:["200g Haferflocken fein","60g Proteinpulver","2 Eier","100g Erdnussmus","1 Banane","30g Schokodrops 70%","1 TL Backpulver"],steps:"Verkneten, 12 Cookies formen, 12-15 Min bei 170°C backen."}];
+
+const skip={}, train={};
+days.forEach(d=>{skip[d.key]={breakfast:{profileC:false,profileN:false},lunch:{profileC:false,profileN:false},dinner:{profileC:false,profileN:false}};train[d.key]={profileC:true,profileN:true};});
+let selectedKey = todayKey();
+function todayKey(){const map=["so","mo","di","mi","do","fr","sa"];return map[new Date().getDay()];}
+function dayByKey(k){return days.find(d=>d.key===k)||days[0];}
+function mealData(d,k){return k==='breakfast'?breakfast:d[k];}
+function dayTotal(d,person){let kcal=0,p=0,c=0,f=0;['breakfast','lunch','dinner'].forEach(k=>{if(!skip[d.key][k][person]){const v=mealData(d,k)[person];kcal+=v[0];p+=v[1];c+=v[2];f+=v[3];}});const s=snack[person];return {kcal:kcal+s[0],p:p+s[1],c:c+s[2],f:f+s[3]};}
+function target(d,person){const trained=train[d.key][person];return person==='profileN'?(trained?d.profileNTargetTrain:d.profileNTargetRest):(trained?d.profileCTargetTrain:d.profileCTargetRest);}
+function breakfastRecipe(){return `<p><b>Zutaten gesamt:</b> Haferflocken, Magerquark, Mandelmilch, Chia/Flohsamen, Banane, Walnüsse.</p><p><b>Zutaten Profil C:</b> ${breakfast.profileC[4]}</p><p><b>Zutaten Profil N:</b> ${breakfast.profileN[4]}</p><p><b>Zubereitung:</b> Alles verrühren, 5-10 Min quellen lassen oder über Nacht kalt stellen.</p><p><b>Haltbarkeit:</b> Overnight im Kühlschrank 1-2 Tage.</p>`;}
+function recipeDetails(d){const m=styleMeta[d.key];return `<p><b>Zutaten gesamt:</b> ${m.basisAll}</p><p><b>Zutaten Profil C:</b> Mittag ${d.lunch.profileC[4]} · Abend ${d.dinner.profileC[4]}</p><p><b>Zutaten Profil N:</b> Mittag ${d.lunch.profileN[4]} · Abend ${d.dinner.profileN[4]}</p><p><b>Zubereitung:</b> ${m.extra}</p>${m.geraet!=="—"?`<p><b>Gerät:</b> ${m.geraet}</p>`:''}<p><b>Haltbarkeit:</b> ${m.haltbar}</p>`;}
+function mealCard(label,d,mealKey,dish){const data=mealData(d,mealKey),cel=data.profileC,noe=data.profileN,rec=mealKey==='breakfast'?breakfastRecipe():recipeDetails(d);return `<div class="mealcard"><div class="mealhead"><b>${label}</b><span class="dish">${dish}</span></div><div class="portions"><span>C: ${cel[4]} <label class="mini"><input type="checkbox" data-day="${d.key}" data-meal="${mealKey}" data-person="profileC" ${skip[d.key][mealKey].profileC?'checked':''}> auswärts</label></span><span>N: ${noe[4]} <label class="mini"><input type="checkbox" data-day="${d.key}" data-meal="${mealKey}" data-person="profileN" ${skip[d.key][mealKey].profileN?'checked':''}> auswärts</label></span></div><details><summary>Rezept</summary>${rec}</details><details><summary>Makros</summary><p>Profil C: ${cel[0]}kcal · ${cel[1]}P · ${cel[2]}KH · ${cel[3]}F</p><p>Profil N: ${noe[0]}kcal · ${noe[1]}P · ${noe[2]}KH · ${noe[3]}F</p></details></div>`;}
+function renderHeute(){const d=dayByKey(selectedKey),m=styleMeta[d.key],tN=target(d,'profileN'),tC=target(d,'profileC'),totN=dayTotal(d,'profileN'),totC=dayTotal(d,'profileC');document.getElementById('page-heute').innerHTML=`<h1>${d.label}, ${d.date}</h1><div class="card small">Prep: ${d.cook?'heute kochen — '+m.style:'Reste von gestern'}</div><div class="card small">Wasser: 2-3 L · Obst/Gemüse: mind. 2 Portionen</div><div class="card"><b>Bilanz</b> — Profil N ${totN.kcal}/${tN} kcal · Profil C ${totC.kcal}/${tC} kcal</div>${mealCard('Frühstück',d,'breakfast','Quark-Chia-Porridge')}${mealCard('Mittag',d,'lunch',m.style)}${mealCard('Abend',d,'dinner',m.style)}<details><summary>Snack-Puffer</summary><p>Profil C ${snack.profileC[0]}kcal · Profil N ${snack.profileN[0]}kcal (Backen, siehe Prep)</p></details>`;bindToggles('page-heute');}
+function renderWoche(){document.getElementById('page-woche').innerHTML=`<h1>Woche</h1>`+days.map(d=>`<div class="card small weekrow" data-dayselect="${d.key}"><span>${d.label}<br><span class="mini">${d.date}</span></span><span class="dish">${styleMeta[d.key].style}</span><span>${d.cook?'Kochen':'Reste'}</span><span class="mini">N:${d.profileNT}<br>C:${d.profileCT}</span></div>`).join('');document.querySelectorAll('[data-dayselect]').forEach(x=>x.onclick=()=>{selectedKey=x.dataset.dayselect;renderHeute();showTab('heute');});}
+function renderRezepte(){const d=dayByKey(selectedKey);document.getElementById('page-prep').innerHTML=`<h1>Prep</h1><div class="card small">Heute vorbereiten: ${d.cook?styleMeta[d.key].style:'—'}</div><div class="card small">Für morgen: Reis/Nudeln ggf. frisch kochen</div><div class="card small">Frisch lassen: Ofengemüse, Salate</div><div class="card small">Reste verbrauchen: Vortag zuerst</div><h1 style="margin-top:16px;">Alle Rezepte</h1><details><summary>Frühstück: Quark-Chia-Porridge</summary>${breakfastRecipe()}</details>${days.map(x=>`<details><summary>${x.label}: ${styleMeta[x.key].style}</summary>${recipeDetails(x)}</details>`).join('')}<details><summary>Wochenend-Backen</summary>${bake.map(b=>`<p><b>${b.name}</b> (${b.sub})<br>${b.ing.join(', ')}<br>${b.steps}</p>`).join('')}</details>`;}
+function renderEinkauf(){document.getElementById('page-einkauf').innerHTML=`<h1>Einkauf</h1><details open><summary>Protein</summary><label><input type="checkbox"> Hähnchenbrust 1,4kg</label><br><label><input type="checkbox"> Lachsfilet 1,35kg</label><br><label><input type="checkbox"> Rinderhack 400g</label></details><details><summary>KH</summary><label><input type="checkbox"> Basmatireis 1kg</label><br><label><input type="checkbox"> Dinkelnudeln 500g</label><br><label><input type="checkbox"> Dinkelmehl 1kg</label></details><details><summary>Obst & Gemüse</summary><label><input type="checkbox"> Brokkoli, Paprika, Gurke</label><br><label><input type="checkbox"> TK-Asia-Gemüse</label><br><label><input type="checkbox"> Zucchini, Süßkartoffel</label><br><label><input type="checkbox"> Bananen, Äpfel</label></details><details><summary>Milchprodukte</summary><label><input type="checkbox"> Magerquark 700g</label><br><label><input type="checkbox"> Mandelmilch 1L</label><br><label><input type="checkbox"> Joghurt</label></details><details><summary>Vorrat/Sonstiges</summary><label><input type="checkbox"> Gewürze, Öle, Saucen</label></details><details><summary>Preise</summary><p>Gesamt ca. 100€/Woche.</p></details>`;}
+function renderEinstellungen(){document.getElementById('page-einstellungen').innerHTML=`<h1>Mehr</h1><details><summary>Profile</summary><p>Profil N: 2335 kcal Ø, 160g P<br>Profil C: 1998 kcal Ø, 105g P</p></details><details><summary>Training je Tag</summary>${days.map(d=>`<p>${d.label}: <label class="mini"><input type="checkbox" data-traintoggle="profileN" data-day="${d.key}" ${train[d.key].profileN?'checked':''}>Profil N</label> <label class="mini"><input type="checkbox" data-traintoggle="profileC" data-day="${d.key}" ${train[d.key].profileC?'checked':''}>Profil C</label></p>`).join('')}</details><details><summary>Hinweise</summary><p>Allgemeine Hinweise: unerwünschte Zutaten meiden. Proteinpulver nicht täglich. Auf Kühlschrank-Haltbarkeit achten.</p></details>`;document.querySelectorAll('#page-einstellungen input[data-traintoggle]').forEach(cb=>{cb.onchange=e=>{train[e.target.dataset.day][e.target.dataset.traintoggle]=e.target.checked;renderHeute();};});}
+function bindToggles(scopeId){document.querySelectorAll('#'+scopeId+' input[type=checkbox][data-meal]').forEach(cb=>{cb.onchange=e=>{const {day,meal,person}=e.target.dataset;skip[day][meal][person]=e.target.checked;renderHeute();renderEinkauf();};});}
+function showTab(tab){document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));document.querySelectorAll('.tab-page').forEach(p=>p.classList.toggle('active',p.id==='page-'+tab));if(tab==='woche')renderWoche();if(tab==='prep')renderRezepte();if(tab==='einkauf')renderEinkauf();if(tab==='einstellungen')renderEinstellungen();}
+document.querySelectorAll('.tabbar button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+renderHeute();renderWoche();renderRezepte();renderEinkauf();renderEinstellungen();
+</script>
+
+<script>
+const recipes = {
+mo:{title:"Sriracha-Mayo-Bowl",imagePrompt:"professionelles Food-Foto einer Reis-Bowl mit Hähnchen, Lachs, Brokkoli und Sriracha-Mayo, natürliches Licht, moderner Kochbuchstil",servings:"2 Personen, Mittag+Abend",time:"25 Min",difficulty:"Einfach",devices:"Airfryer (2 Fächer), Reiskocher",ingredientsTotal:["500g Basmatireis (trocken, für 2 Tage)","150g Brokkoli","1/2 rote Paprika","1/4 Gurke","1 EL (15g) Mayonnaise","1 TL (5g) Sriracha"],ingredientsProfil C:["700g Hähnchenbrustfilet gesamt (Mittag 100g, Abend 75g)"],ingredientsProfil N:["1000g Lachsfilet gesamt (Mittag 150g, Abend 100g)"],seasoning:"Hähnchen: Salz, Pfeffer, 1 TL Paprikapulver edelsüß. Lachs: Salz, Pfeffer, Saft von 1/2 Zitrone.",steps:["Reis im Reiskocher nach Packungsangabe kochen (Wasser laut Markierung).","Hähnchenbrustfilet mit Salz, Pfeffer, Paprikapulver einreiben. In Airfryer-Fach 1, 180°C, 12 Min.","Lachsfilet mit Salz, Pfeffer, Zitronensaft würzen. In Airfryer-Fach 2, 180°C, 12 Min.","Brokkoli und Paprika 3 Min in der Mikrowelle oder 5 Min im Topf dünsten.","Mayonnaise und Sriracha verrühren.","Reis, Protein, Gemüse in Schale anrichten, Sauce darüber."],doneCheck:"Hähnchen fertig, wenn innen nicht mehr rosa (Kerntemp. 74°C). Lachs fertig, wenn er sich mit der Gabel in Schichten löst.",mealPrep:"Hähnchen/Lachs 3-4 Tage im Kühlschrank in geschlossener Dose. Reis alle 2 Tage frisch kochen.",lowEffortAlternative:"Statt frischem Brokkoli/Paprika: 200g TK-Gemüse-Mix 4 Min in der Mikrowelle.",notes:"Portionsgröße Mittag/Abend siehe Tageskarte."},
+di:{title:"Asia-Erdnuss-Bowl",imagePrompt:"professionelles Food-Foto einer Asia-Bowl mit Hähnchen, Lachs, Frühlingszwiebel und Erdnuss-Topping, natürliches Licht, Kochbuchstil",servings:"2 Personen, Mittag+Abend",time:"15 Min",difficulty:"Einfach",devices:"Pfanne",ingredientsTotal:["Reis + Protein aus Batch (s. Montag)","200g TK-Asia-Gemüse-Mix","1 Frühlingszwiebel","15g Erdnüsse gehackt","1 EL (15g) Erdnussmus","1 EL (15g) Sojasauce","1 TL Wasser"],ingredientsProfil C:["Hähnchen-Reste aus Montags-Batch"],ingredientsProfil N:["Lachs-Reste aus Montags-Batch"],seasoning:"Erdnusssauce: Erdnussmus, Sojasauce, Wasser glattrühren.",steps:["TK-Asia-Gemüse ohne Öl 5 Min in der Pfanne bei mittlerer Hitze anbraten, gelegentlich wenden.","Hähnchen/Lachs aus dem Kühlschrank 2 Min in der Mikrowelle erwärmen.","Erdnussmus, Sojasauce, Wasser glattrühren.","Reis, Gemüse, Protein anrichten, Sauce darüber, Frühlingszwiebel und Erdnüsse darüberstreuen."],doneCheck:"Gemüse fertig, wenn es leicht Farbe angenommen hat und nicht mehr gefroren ist.",mealPrep:"Wie Montag.",lowEffortAlternative:"Fertige Erdnusssauce aus dem Glas statt selbst anrühren.",notes:""},
+mi:{title:"Ofengemüse & Joghurt-Dip",imagePrompt:"professionelles Food-Foto von geröstetem Ofengemüse mit Hähnchen, Lachs und Joghurt-Dip, warmes Licht, Kochbuchstil",servings:"2 Personen, Mittag+Abend",time:"25 Min",difficulty:"Einfach",devices:"Ofen",ingredientsTotal:["Reis + Protein aus Batch","150g Zucchini","100g Süßkartoffel","3 EL (60g) griechischer Joghurt","1/2 Knoblauchzehe","Saft 1/2 Zitrone"],ingredientsProfil C:["Hähnchen-Reste"],ingredientsProfil N:["Lachs-Reste"],seasoning:"Zucchini/Süßkartoffel: 1 EL Öl, Salz, Pfeffer, 1/2 TL Paprikapulver.",steps:["Backofen auf 200°C Ober-/Unterhitze vorheizen.","Süßkartoffel würfeln, mit Zucchini, Öl, Salz, Pfeffer, Paprikapulver mischen, auf Blech verteilen.","15 Min im Ofen rösten, nach 8 Min einmal wenden.","Knoblauch pressen, mit Joghurt und Zitronensaft verrühren.","Hähnchen/Lachs 2 Min in der Mikrowelle erwärmen, mit Reis, Ofengemüse und Dip servieren."],doneCheck:"Gemüse fertig, wenn Süßkartoffel mit der Gabel weich ist und Ränder leicht gebräunt sind.",mealPrep:"Wie Montag, Ofengemüse innerhalb von 3 Tagen essen.",lowEffortAlternative:"TK-Ofengemüse-Mischung direkt aus dem Beutel verwenden.",notes:""},
+do:{title:"Kalte Sesam-Bowl",imagePrompt:"professionelles Food-Foto einer kalten Reis-Bowl mit Karotte, Gurke, Sesam-Dressing, Hähnchen und Lachs, Kochbuchstil",servings:"2 Personen, Mittag+Abend",time:"10 Min",difficulty:"Einfach",devices:"—",ingredientsTotal:["Reis-Reste aus Batch","100g Karotte","1/4 Gurke","1 EL (15g) Sesamöl","1 EL (15g) Reisessig","1 TL Sojasauce","1 TL Sesam"],ingredientsProfil C:["Hähnchen-Reste"],ingredientsProfil N:["Lachs-Reste"],seasoning:"Dressing: Sesamöl, Reisessig, Sojasauce verrühren.",steps:["Karotte raspeln, Gurke in dünne Scheiben schneiden.","Sesamöl, Reisessig, Sojasauce verrühren.","Reis (kalt oder zimmerwarm), Protein, Gemüse in Schale anrichten.","Dressing darüber, Sesam darüberstreuen."],doneCheck:"—",mealPrep:"Letzter Tag des Batches, Reste aufbrauchen.",lowEffortAlternative:"Fertiges Sesam-Dressing aus der Flasche.",notes:""},
+fr:{title:"Nudeln Bolognese-Style",imagePrompt:"professionelles Food-Foto von Dinkelnudeln mit Tomaten-Linsen-Sauce und Hähnchen bzw. Rinderhack, warmes Licht, Kochbuchstil",servings:"2 Personen, Mittag+Abend",time:"30 Min",difficulty:"Einfach",devices:"Topf oder Thermomix",ingredientsTotal:["320g Dinkelnudeln (trocken)","2 Dosen (800g) gehackte Tomaten","150g rote Linsen (trocken)","1 Zwiebel","2 Knoblauchzehen","2 EL (20g) Olivenöl","1 TL Oregano","1 TL Basilikum","Chiliflocken"],ingredientsProfil C:["350g Hähnchenbrustfilet-Würfel gesamt (Mittag 100g, Abend 75g)"],ingredientsProfil N:["400g mageres Rinderhack gesamt (Mittag 110g, Abend 90g)"],seasoning:"Sauce: Oregano, Basilikum, Chiliflocken, Salz, Pfeffer.",steps:["Zwiebel und Knoblauch fein würfeln, in Olivenöl 3 Min bei mittlerer Hitze andünsten.","Tomaten, Linsen, Oregano, Basilikum, Chiliflocken dazugeben, 20 Min köcheln lassen, gelegentlich umrühren.","Hähnchenwürfel in einem Topfteil der Sauce die letzten 8 Min mitgaren.","Rinderhack separat in der Pfanne 6-8 Min anbraten, unter Profil Ns Sauce mischen.","Nudeln nach Packungsangabe (ca. 8-10 Min) kochen, abgießen.","Nudeln mit jeweiliger Sauce kombinieren."],doneCheck:"Linsen fertig, wenn sie weich sind (nicht mehr bissfest). Rinderhack fertig, wenn keine rosa Stellen mehr sichtbar sind.",mealPrep:"Sauce 3-4 Tage im Kühlschrank.",lowEffortAlternative:"Fertige Tomatensauce aus dem Glas statt selbst würzen, Linsen aus der Dose statt trocken kochen.",notes:""},
+sa:{title:"Nudelsalat kalt",imagePrompt:"professionelles Food-Foto eines kalten Nudelsalats mit Rucola und Balsamico, Kochbuchstil",servings:"2 Personen, Mittag+Abend",time:"5 Min",difficulty:"Einfach",devices:"—",ingredientsTotal:["Nudel-Sauce-Reste von Freitag","50g Rucola","1 EL (15g) Balsamico-Essig","1 TL Olivenöl"],ingredientsProfil C:["Reste"],ingredientsProfil N:["Reste"],seasoning:"Balsamico und Öl verrühren.",steps:["Nudeln mit Sauce aus dem Kühlschrank nehmen, nicht erwärmen.","Rucola waschen, unterheben.","Balsamico und Öl darüberträufeln."],doneCheck:"—",mealPrep:"Letzter Tag, Reste aufbrauchen.",lowEffortAlternative:"Rucola durch beliebigen vorhandenen Salat ersetzen.",notes:""},
+so:{title:"Wochenend-Döner-Bowl",imagePrompt:"professionelles Food-Foto einer gesunden Döner-Bowl mit Hähnchen, Lachs, Joghurtsoße, Salat und Fladenbrot, natürliches Licht, moderner Kochbuchstil",servings:"2 Personen, Mittag+Abend",time:"20 Min (mit gekauftem Fladenbrot)",difficulty:"Einfach",devices:"Airfryer oder Ofen",ingredientsTotal:["8 Fladenbrote (gekauft, Dinkel falls verfügbar)","250g griechischer Joghurt","1 Knoblauchzehe","Saft 1/2 Zitrone","frische Kräuter (Petersilie/Dill)","200g Rotkohl","Tomate, Gurke"],ingredientsProfil C:["350g Hähnchenbrustfilet gesamt (Mittag 100g, Abend 75g)"],ingredientsProfil N:["350g Lachsfilet gesamt (Mittag 100g, Abend 75g)"],seasoning:"Hähnchen: 2 TL Paprika edelsüß, 1 TL Kreuzkümmel, 1 TL Knoblauchpulver, Salz. Lachs: Salz, Pfeffer, Zitrone.",steps:["Hähnchen mit Paprika, Kreuzkümmel, Knoblauchpulver, Salz einreiben. Airfryer 180°C, 12-14 Min.","Lachs mit Salz, Pfeffer, Zitronensaft würzen. Airfryer 180°C, 12 Min (paralleles Fach).","Gekauftes Fladenbrot im Airfryer 2-3 Min bei 180°C aufbacken.","Joghurt, gepressten Knoblauch, Zitronensaft, gehackte Kräuter verrühren.","Rotkohl fein hobeln, Tomate/Gurke würfeln.","Fladenbrot, Protein, Dip und Salate zusammen anrichten."],doneCheck:"Hähnchen fertig, wenn innen nicht mehr rosa. Lachs fertig, wenn er in Schichten zerfällt.",mealPrep:"Fladenbrot 2-3 Tage haltbar, Fleisch/Fisch 3-4 Tage.",lowEffortAlternative:"Fladenbrot fertig kaufen statt selbst backen (Standard-Empfehlung, Selbstbacken nur optional am Wochenende).",notes:"Selbstgebackene Dinkel-Fladenbrot-Variante: 350g Dinkelmehl, 7g Hefe, 200ml Wasser, 1 TL Salz, 1 EL Öl kneten, 45 Min gehen lassen, in Pfanne backen — nur wenn Zeit/Lust vorhanden."}
+};
+const bakeRecipes=[{title:"Protein-Bananenbrot",imagePrompt:"professionelles Food-Foto von Protein-Bananenbrot in Scheiben, Kochbuchstil",servings:"10 Scheiben",time:"55 Min",difficulty:"Einfach",devices:"Ofen",ingredientsTotal:["3 reife Bananen","4 Eier","200g Magerquark","60g Vanille-Proteinpulver","150g Dinkelmehl","1 TL Backpulver","1 TL Zimt","50g Walnüsse gehackt"],ingredientsProfil C:[],ingredientsProfil N:[],seasoning:"Zimt.",steps:["Ofen auf 175°C vorheizen.","Bananen zerdrücken, mit Eiern und Magerquark verrühren.","Proteinpulver, Dinkelmehl, Backpulver, Zimt unterrühren.","Walnüsse unterheben.","In Kastenform füllen, 45-50 Min backen."],doneCheck:"Fertig, wenn Stäbchentest sauber bleibt.",mealPrep:"4-5 Tage haltbar, scheibenweise einfrierbar.",lowEffortAlternative:"Fertige Proteinbrot-Backmischung verwenden.",notes:""},{title:"High-Protein-Cookies",imagePrompt:"professionelles Food-Foto von High-Protein-Cookies auf einem Blech, Kochbuchstil",servings:"12 Stück",time:"20 Min",difficulty:"Einfach",devices:"Ofen",ingredientsTotal:["200g Haferflocken fein gemahlen","60g Proteinpulver","2 Eier","100g Erdnussmus","1 Banane","30g Schokodrops 70%","1 TL Backpulver"],ingredientsProfil C:[],ingredientsProfil N:[],seasoning:"—",steps:["Ofen auf 170°C vorheizen.","Alle Zutaten verkneten.","12 Cookies formen, auf Blech verteilen.","12-15 Min backen."],doneCheck:"Fertig, wenn Ränder leicht gebräunt sind.",mealPrep:"5 Tage haltbar, gut einfrierbar.",lowEffortAlternative:"Nur 4 statt 12 backen, Rest Teig einfrieren.",notes:""}];
+function imgBlock(prompt){return `<div class="recipeimg"><span>KI-Bild folgt<br><small>${prompt}</small></span></div>`;}
+function recipePage(r){return `${imgBlock(r.imagePrompt)}<h1>${r.title}</h1><p class="rmeta">${r.servings} · ${r.time} · ${r.difficulty} · ${r.devices}</p><details open><summary>Zutaten gesamt</summary><ul>${r.ingredientsTotal.map(i=>`<li>${i}</li>`).join('')}</ul></details>${r.ingredientsProfil C.length?`<details><summary>Portion Profil C</summary><ul>${r.ingredientsProfil C.map(i=>`<li>${i}</li>`).join('')}</ul></details>`:''}${r.ingredientsProfil N.length?`<details><summary>Portion Profil N</summary><ul>${r.ingredientsProfil N.map(i=>`<li>${i}</li>`).join('')}</ul></details>`:''}<details><summary>Gewürze/Sauce</summary><p>${r.seasoning}</p></details><details open><summary>Zubereitung</summary><ol class="steplist">${r.steps.map(s=>`<li><label><input type="checkbox" class="stepcheck"><span>${s}</span></label></li>`).join('')}</ol></details><details><summary>Fertigkeitscheck</summary><p>${r.doneCheck}</p></details><details><summary>Meal-Prep/Haltbarkeit</summary><p>${r.mealPrep}</p></details><details><summary>Low-Effort-Alternative</summary><p>${r.lowEffortAlternative}</p></details>${r.notes?`<details><summary>Notizen</summary><p>${r.notes}</p></details>`:''}`;}
+function openRecipe(key,isBake){const r=isBake?bakeRecipes[key]:recipes[key];document.getElementById('recipeContent').innerHTML=recipePage(r);document.getElementById('recipeModal').classList.add('open');}
+function closeRecipe(){document.getElementById('recipeModal').classList.remove('open');}
+mealCard=function(label,d,mealKey,dish){const data=mealData(d,mealKey),cel=data.profileC,noe=data.profileN;return `<div class="mealcard"><div class="mealhead"><b>${label}</b><span class="dish">${dish}</span></div><div class="portions"><span>C: ${cel[4]} <label class="mini"><input type="checkbox" data-day="${d.key}" data-meal="${mealKey}" data-person="profileC" ${skip[d.key][mealKey].profileC?'checked':''}> auswärts</label></span><span>N: ${noe[4]} <label class="mini"><input type="checkbox" data-day="${d.key}" data-meal="${mealKey}" data-person="profileN" ${skip[d.key][mealKey].profileN?'checked':''}> auswärts</label></span></div>${mealKey!=="breakfast"?`<button class="recipebtn" onclick="openRecipe('${d.key}')">Rezept öffnen</button>`:`<button class="recipebtn" onclick="document.querySelector('#page-prep').scrollIntoView(); showTab('prep')">Frühstück im Rezeptbuch</button>`}<details><summary>Makros</summary><p>Profil C: ${cel[0]}kcal · ${cel[1]}P · ${cel[2]}KH · ${cel[3]}F</p><p>Profil N: ${noe[0]}kcal · ${noe[1]}P · ${noe[2]}KH · ${noe[3]}F</p></details></div>`;};
+renderRezepte=function(){const d=dayByKey(selectedKey);document.getElementById('page-prep').innerHTML=`<h1>Prep / Rezeptbuch</h1><div class="card small">Heute: ${d.cook?recipes[d.key].title:'Reste'}</div><div class="card small">Reste zuerst verbrauchen, dann neu kochen.</div><h1 style="margin-top:16px;">Alle Rezepte</h1>${days.map(d=>`<div class="bookcard" onclick="openRecipe('${d.key}')"><b>${d.label}</b> — ${recipes[d.key].title}</div>`).join('')}${bakeRecipes.map((b,i)=>`<div class="bookcard" onclick="openRecipe(${i},true)"><b>Backen</b> — ${b.title}</div>`).join('')}`;};
+renderHeute(); renderRezepte();
+</script>
+
+</body>
+</html>
